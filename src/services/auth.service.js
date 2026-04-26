@@ -1,16 +1,77 @@
+// services/auth.service.js
 import api from './api';
 
 export const authService = {
-  login: (email, password) => api.post('/admin/auth/login', { email, password }),
-  verifyOTP: (email, otp, tempToken) => api.post('/admin/auth/verify-otp', { email, otp, tempToken }),
-  resendOTP: (email) => api.post('/admin/auth/resend-otp', { email }),
-  verify2FALogin: (twoFactorCode, tempToken) => api.post('/admin/auth/verify-2fa-login', { twoFactorCode, tempToken }),
-  logout: () => api.post('/admin/auth/logout'),
-  refreshToken: (refreshToken) => api.post('/admin/auth/refresh-token', { refreshToken }),
-  getProfile: () => api.get('/admin/auth/profile'),
-  updateProfile: (data) => api.put('/admin/auth/profile', data),
-  changePassword: (currentPassword, newPassword) => api.post('/admin/auth/change-password', { currentPassword, newPassword }),
-  enable2FA: () => api.post('/admin/auth/enable-2fa'),
-  verify2FA: (code) => api.post('/admin/auth/verify-2fa', { code }),
-  disable2FA: (code) => api.post('/admin/auth/disable-2fa', { code }),
+  login: async (email, password) => {
+    console.log('🔑 Login API call:', { email });
+    const response = await api.post('/admin/auth/login', { email, password });
+    console.log('📦 Login API response:', response);
+    return response;
+  },
+
+  verifyOTP: async (email, otp, tempToken) => {
+    console.log('🔐 Verify OTP API call:', { email, otp, tempToken });
+    const response = await api.post('/admin/auth/verify-otp', {
+      email,
+      otp,
+      tempToken,
+    });
+    console.log('📦 Verify OTP API response:', response);
+    return response;
+  },
+
+  resendOTP: async (email) => {
+    console.log('📧 Resend OTP API call:', { email });
+    const response = await api.post('/admin/auth/resend-otp', { email });
+    console.log('📦 Resend OTP API response:', response);
+    return response;
+  },
+
+  verify2FALogin: async (code, tempToken) => {
+    console.log('🔒 Verify 2FA API call:', { code, tempToken });
+    const response = await api.post('/admin/auth/verify-2fa', {
+      code,
+      tempToken,
+    });
+    console.log('📦 Verify 2FA API response:', response);
+    return response;
+  },
+
+  getProfile: async () => {
+    const response = await api.get('/admin/auth/profile');
+    return response;
+  },
+
+  logout: async () => {
+    const response = await api.post('/admin/auth/logout');
+    return response;
+  },
+
+  updateProfile: async (data) => {
+    const response = await api.put('/admin/auth/profile', data);
+    return response;
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const response = await api.put('/admin/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
+    return response;
+  },
+
+  enable2FA: async () => {
+    const response = await api.post('/admin/auth/2fa/enable');
+    return response;
+  },
+
+  verify2FA: async (code) => {
+    const response = await api.post('/admin/auth/2fa/verify', { code });
+    return response;
+  },
+
+  disable2FA: async (code) => {
+    const response = await api.post('/admin/auth/2fa/disable', { code });
+    return response;
+  },
 };
