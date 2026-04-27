@@ -1,275 +1,119 @@
-// 'use client';
-
-// import { create } from 'zustand';
-// import { productService } from '@/services/product.service';
-// import toast from 'react-hot-toast';
-
-// export const useProductStore = create((set, get) => ({
-//   products: [],
-//   selectedProduct: null,
-//   pagination: {
-//     page: 1,
-//     limit: 20,
-//     total: 0,
-//     totalPages: 0,
-//   },
-//   loading: false,
-//   filters: {
-//     search: '',
-//     category: '',
-//     status: '',
-//     sort: '-createdAt',
-//   },
-
-//   setFilters: (filters) => {
-//     set({ filters: { ...get().filters, ...filters } });
-//   },
-
-//   resetFilters: () => {
-//     set({
-//       filters: {
-//         search: '',
-//         category: '',
-//         status: '',
-//         sort: '-createdAt',
-//       },
-//     });
-//   },
-
-//   fetchProducts: async () => {
-//     const { pagination, filters } = get();
-//     set({ loading: true });
-    
-//     try {
-//       const response = await productService.getAll({
-//         page: pagination.page,
-//         limit: pagination.limit,
-//         ...filters,
-//       });
-      
-//       set({
-//         products: response.data || [],
-//         pagination: {
-//           ...pagination,
-//           total: response.pagination?.total || 0,
-//           totalPages: response.pagination?.totalPages || 0,
-//         },
-//         loading: false,
-//       });
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to fetch products');
-//       set({ loading: false });
-//     }
-//   },
-
-//   // fetchProduct: async (id) => {
-//   //   set({ loading: true });
-//   //   try {
-//   //     const response = await productService.getById(id);
-//   //     set({ selectedProduct: response.data, loading: false });
-//   //     return response.data;
-//   //   } catch (error) {
-//   //     toast.error(error.message || 'Failed to fetch product');
-//   //     set({ loading: false });
-//   //     throw error;
-//   //   }
-//   // },
-
-
-
-//   fetchProducts: async () => {
-//   const { pagination, filters } = get();
-//   set({ loading: true });
-  
-//   try {
-//     const response = await productService.getAll({
-//       page: pagination.page,
-//       limit: pagination.limit,
-//       ...filters,
-//     });
-    
-//     console.log('📦 Products response:', response);
-    
-//     // ✅ Handle the response structure
-//     let products = [];
-//     let total = 0;
-//     let totalPages = 1;
-    
-//     if (response.data) {
-//       products = Array.isArray(response.data) ? response.data : [];
-//       total = response.pagination?.total || products.length;
-//       totalPages = response.pagination?.totalPages || 1;
-//     }
-    
-//     console.log('✅ Loaded products:', products.length);
-    
-//     set({
-//       products: products,
-//       pagination: {
-//         page: response.pagination?.page || pagination.page,
-//         limit: response.pagination?.limit || pagination.limit,
-//         total: total,
-//         totalPages: totalPages,
-//       },
-//       loading: false,
-//     });
-//   } catch (error) {
-//     console.error('Fetch products error:', error);
-//     toast.error(error.message || 'Failed to fetch products');
-//     set({ 
-//       products: [],
-//       loading: false 
-//     });
-//   }
-// },
-
-//   createProduct: async (data) => {
-//     set({ loading: true });
-//     try {
-//       const response = await productService.create(data);
-//       toast.success(response.message || 'Product created successfully');
-//       await get().fetchProducts();
-//       return response.data;
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to create product');
-//       throw error;
-//     } finally {
-//       set({ loading: false });
-//     }
-//   },
-
-//   updateProduct: async (id, data) => {
-//     set({ loading: true });
-//     try {
-//       const response = await productService.update(id, data);
-//       toast.success(response.message || 'Product updated successfully');
-//       await get().fetchProducts();
-//       return response.data;
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to update product');
-//       throw error;
-//     } finally {
-//       set({ loading: false });
-//     }
-//   },
-
-//   deleteProduct: async (id) => {
-//     set({ loading: true });
-//     try {
-//       const response = await productService.delete(id);
-//       toast.success(response.message || 'Product deleted successfully');
-//       await get().fetchProducts();
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to delete product');
-//       throw error;
-//     } finally {
-//       set({ loading: false });
-//     }
-//   },
-
-//   bulkUpdateProducts: async (productIds, updateData) => {
-//     set({ loading: true });
-//     try {
-//       const response = await productService.bulkUpdate(productIds, updateData);
-//       toast.success(response.message);
-//       await get().fetchProducts();
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to bulk update products');
-//       throw error;
-//     } finally {
-//       set({ loading: false });
-//     }
-//   },
-
-//   updateStock: async (id, stock) => {
-//     try {
-//       const response = await productService.updateStock(id, stock);
-//       toast.success(response.message || 'Stock updated');
-//       await get().fetchProducts();
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to update stock');
-//       throw error;
-//     }
-//   },
-
-//   getLowStock: async (threshold = 10) => {
-//     try {
-//       const response = await productService.getLowStock(threshold);
-//       return response.data;
-//     } catch (error) {
-//       toast.error(error.message || 'Failed to fetch low stock products');
-//       throw error;
-//     }
-//   },
-
-//   setPage: (page) => {
-//     set({ pagination: { ...get().pagination, page } });
-//     get().fetchProducts();
-//   },
-
-//   clearSelected: () => {
-//     set({ selectedProduct: null });
-//   },
-// }));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// src/store/productStore.js
 'use client';
 
 import { create } from 'zustand';
 import { productService } from '@/services/product.service';
 import toast from 'react-hot-toast';
-import Cookies from 'js-cookie'; // ✅ Import Cookies
+import Cookies from 'js-cookie';
 
+// ============================================
+// TOKEN HELPER - Check multiple sources
+// ============================================
+const getToken = () => {
+  // Check localStorage first (most common)
+  let token = localStorage.getItem('accessToken');
+  
+  // Check alternative localStorage keys
+  if (!token) {
+    token = localStorage.getItem('adminToken');
+  }
+  
+  if (!token) {
+    token = localStorage.getItem('token');
+  }
+  
+  // Check sessionStorage
+  if (!token) {
+    token = sessionStorage.getItem('accessToken');
+  }
+  
+  if (!token) {
+    token = sessionStorage.getItem('adminToken');
+  }
+  
+  // Check cookies
+  if (!token) {
+    token = Cookies.get('accessToken');
+  }
+  
+  if (!token) {
+    token = Cookies.get('adminToken');
+  }
+  
+  if (!token) {
+    token = Cookies.get('token');
+  }
+  
+  return token;
+};
+
+// ============================================
+// RESPONSE PARSER - Handle different API responses
+// ============================================
+const parseResponse = (response, context = '') => {
+  console.log(`📦 ${context} response:`, response);
+
+  if (!response) {
+    console.warn(`⚠️ ${context}: Empty response`);
+    return { data: [], pagination: { total: 0, page: 1, pages: 1 } };
+  }
+
+  // Handle wrapped response: { success, data, pagination, message }
+  if (response.data !== undefined) {
+    return {
+      data: Array.isArray(response.data) ? response.data : response.data,
+      pagination: response.pagination || { total: 0, page: 1, pages: 1 },
+      message: response.message || '',
+    };
+  }
+
+  // Handle direct array
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      pagination: { total: response.length, page: 1, pages: 1 },
+      message: '',
+    };
+  }
+
+  // Handle { products, total, pages }
+  if (response.products) {
+    return {
+      data: Array.isArray(response.products) ? response.products : [response.products],
+      pagination: {
+        total: response.total || 0,
+        page: response.page || 1,
+        pages: response.pages || 1,
+      },
+      message: response.message || '',
+    };
+  }
+
+  // Return as-is
+  return {
+    data: response,
+    pagination: { total: 0, page: 1, pages: 1 },
+    message: '',
+  };
+};
+
+// ============================================
+// STORE
+// ============================================
 export const useProductStore = create((set, get) => ({
+  // ============ STATE ============
   products: [],
   selectedProduct: null,
+  loading: false,
+  error: null,
+
   pagination: {
     page: 1,
     limit: 20,
     total: 0,
     totalPages: 0,
   },
-  loading: false,
+
   filters: {
     search: '',
     category: '',
@@ -277,6 +121,7 @@ export const useProductStore = create((set, get) => ({
     sort: '-createdAt',
   },
 
+  // ============ FILTER ACTIONS ============
   setFilters: (filters) => {
     set({ filters: { ...get().filters, ...filters } });
   },
@@ -289,165 +134,418 @@ export const useProductStore = create((set, get) => ({
         status: '',
         sort: '-createdAt',
       },
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+      },
     });
   },
 
-  // ✅ SINGLE fetchProducts function with token check
+  // ============ PRODUCT ACTIONS ============
+
+  // Fetch all products
   fetchProducts: async () => {
-    const token = Cookies.get('accessToken'); // ✅ Read from cookies
-    
+    const token = getToken();
+
     if (!token) {
-      console.log('⏭️ No token, skipping product fetch');
+      console.log('⏭️ No token found, skipping product fetch');
+      set({ products: [], loading: false });
       return;
     }
 
     const { pagination, filters } = get();
-    set({ loading: true });
-    
+    set({ loading: true, error: null });
+
     try {
       const response = await productService.getAll({
         page: pagination.page,
         limit: pagination.limit,
         ...filters,
       });
-      
-      console.log('📦 Products response:', response);
-      
-      let products = [];
-      let total = 0;
-      let totalPages = 1;
-      
-      if (response.data) {
-        products = Array.isArray(response.data) ? response.data : [];
-        total = response.pagination?.total || products.length;
-        totalPages = response.pagination?.totalPages || 1;
-      }
-      
-      console.log('✅ Loaded products:', products.length);
-      
+
+      const { data: products, pagination: newPagination } = parseResponse(response, 'Products');
+
+      console.log(`✅ Loaded ${products.length} products (Total: ${newPagination.total})`);
+
       set({
-        products: products,
+        products,
         pagination: {
-          page: response.pagination?.page || pagination.page,
-          limit: response.pagination?.limit || pagination.limit,
-          total: total,
-          totalPages: totalPages,
+          page: newPagination.page || pagination.page,
+          limit: newPagination.limit || pagination.limit,
+          total: newPagination.total || 0,
+          totalPages: newPagination.pages || 1,
         },
         loading: false,
+        error: null,
       });
     } catch (error) {
-      console.error('Fetch products error:', error);
-      if (!error.message?.includes('401')) {
+      console.error('❌ Fetch products error:', error);
+
+      // Don't show toast for 401 errors
+      if (error.status !== 401 && !error.message?.includes('401')) {
         toast.error(error.message || 'Failed to fetch products');
       }
-      set({ products: [], loading: false });
+
+      set({
+        products: [],
+        loading: false,
+        error: error.message || 'Failed to fetch products',
+      });
     }
   },
 
+  // Fetch single product
   fetchProduct: async (id) => {
-    const token = Cookies.get('accessToken'); // ✅ Read from cookies
+    const token = getToken();
     if (!token) {
       toast.error('Please login first');
-      return;
+      return null;
     }
 
-    set({ loading: true });
+    set({ loading: true, error: null });
+
     try {
       const response = await productService.getById(id);
-      set({ selectedProduct: response.data, loading: false });
-      return response.data;
+      const { data: product } = parseResponse(response, 'Single Product');
+
+      // Handle single object response
+      const productData = Array.isArray(product) ? product[0] : product;
+
+      console.log('✅ Product loaded:', productData?._id || productData?.id);
+
+      set({
+        selectedProduct: productData,
+        loading: false,
+        error: null,
+      });
+
+      return productData;
     } catch (error) {
-      toast.error(error.message || 'Failed to fetch product');
-      set({ loading: false });
-      throw error;
+      console.error('❌ Fetch product error:', error);
+
+      if (error.status !== 401) {
+        toast.error(error.message || 'Failed to fetch product');
+      }
+
+      set({
+        loading: false,
+        error: error.message || 'Failed to fetch product',
+      });
+
+      return null;
     }
   },
 
+  // Create product
   createProduct: async (data) => {
-    set({ loading: true });
+    const token = getToken();
+
+    if (!token) {
+      const errorMsg = 'No authentication token found. Please login again.';
+      console.error('❌', errorMsg);
+      toast.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    set({ loading: true, error: null });
+
     try {
+      console.log('📦 Creating product...');
       const response = await productService.create(data);
-      toast.success(response.message || 'Product created successfully');
+      console.log('✅ Product creation response:', response);
+
+      const { data: newProduct, message } = parseResponse(response, 'Create Product');
+
+      // Handle single object response
+      const productData = Array.isArray(newProduct) ? newProduct[0] : newProduct;
+
+      if (productData) {
+        // Add new product to the beginning of the list
+        set((state) => ({
+          products: [productData, ...state.products],
+          loading: false,
+          error: null,
+        }));
+      }
+
+      // Refresh products list to get updated data
       await get().fetchProducts();
-      return response.data;
+
+      toast.success(message || 'Product created successfully! 🎉');
+      return productData;
     } catch (error) {
-      toast.error(error.message || 'Failed to create product');
+      console.error('❌ Create product error:', error);
+
+      // Handle validation errors
+      if (error.errors) {
+        const firstError = Object.values(error.errors)[0];
+        toast.error(firstError);
+      } else if (error.status === 401) {
+        toast.error('Session expired. Please login again.');
+      } else {
+        toast.error(error.message || 'Failed to create product');
+      }
+
+      set({
+        loading: false,
+        error: error.message || 'Failed to create product',
+      });
+
       throw error;
-    } finally {
-      set({ loading: false });
     }
   },
 
+  // Update product
   updateProduct: async (id, data) => {
-    set({ loading: true });
+    const token = getToken();
+
+    if (!token) {
+      toast.error('Please login first');
+      throw new Error('No authentication token');
+    }
+
+    set({ loading: true, error: null });
+
     try {
+      console.log(`📦 Updating product ${id}...`);
       const response = await productService.update(id, data);
-      toast.success(response.message || 'Product updated successfully');
+      console.log('✅ Product update response:', response);
+
+      const { data: updatedProduct, message } = parseResponse(response, 'Update Product');
+
+      // Handle single object response
+      const productData = Array.isArray(updatedProduct) ? updatedProduct[0] : updatedProduct;
+
+      if (productData) {
+        // Update product in the list
+        set((state) => ({
+          products: state.products.map((p) =>
+            p._id === id || p.id === id ? { ...p, ...productData } : p
+          ),
+          selectedProduct:
+            state.selectedProduct?._id === id || state.selectedProduct?.id === id
+              ? { ...state.selectedProduct, ...productData }
+              : state.selectedProduct,
+          loading: false,
+          error: null,
+        }));
+      }
+
+      // Refresh products list
       await get().fetchProducts();
-      return response.data;
+
+      toast.success(message || 'Product updated successfully! ✨');
+      return productData;
     } catch (error) {
-      toast.error(error.message || 'Failed to update product');
+      console.error('❌ Update product error:', error);
+
+      if (error.errors) {
+        const firstError = Object.values(error.errors)[0];
+        toast.error(firstError);
+      } else if (error.status === 401) {
+        toast.error('Session expired. Please login again.');
+      } else {
+        toast.error(error.message || 'Failed to update product');
+      }
+
+      set({
+        loading: false,
+        error: error.message || 'Failed to update product',
+      });
+
       throw error;
-    } finally {
-      set({ loading: false });
     }
   },
 
+  // Delete product
   deleteProduct: async (id) => {
-    set({ loading: true });
+    const token = getToken();
+
+    if (!token) {
+      toast.error('Please login first');
+      throw new Error('No authentication token');
+    }
+
+    set({ loading: true, error: null });
+
     try {
+      console.log(`📦 Deleting product ${id}...`);
       const response = await productService.delete(id);
-      toast.success(response.message || 'Product deleted successfully');
-      await get().fetchProducts();
+      console.log('✅ Product deletion response:', response);
+
+      const { message } = parseResponse(response, 'Delete Product');
+
+      // Remove product from list
+      set((state) => ({
+        products: state.products.filter((p) => p._id !== id && p.id !== id),
+        selectedProduct:
+          state.selectedProduct?._id === id || state.selectedProduct?.id === id
+            ? null
+            : state.selectedProduct,
+        loading: false,
+        error: null,
+      }));
+
+      toast.success(message || 'Product deleted successfully! 🗑️');
     } catch (error) {
-      toast.error(error.message || 'Failed to delete product');
+      console.error('❌ Delete product error:', error);
+
+      if (error.status === 401) {
+        toast.error('Session expired. Please login again.');
+      } else {
+        toast.error(error.message || 'Failed to delete product');
+      }
+
+      set({
+        loading: false,
+        error: error.message || 'Failed to delete product',
+      });
+
       throw error;
-    } finally {
-      set({ loading: false });
     }
   },
 
+  // Bulk update products
   bulkUpdateProducts: async (productIds, updateData) => {
-    set({ loading: true });
+    const token = getToken();
+
+    if (!token) {
+      toast.error('Please login first');
+      throw new Error('No authentication token');
+    }
+
+    set({ loading: true, error: null });
+
     try {
+      console.log(`📦 Bulk updating ${productIds.length} products...`);
       const response = await productService.bulkUpdate(productIds, updateData);
-      toast.success(response.message);
+      console.log('✅ Bulk update response:', response);
+
+      const { message } = parseResponse(response, 'Bulk Update');
+
+      toast.success(message || `Updated ${productIds.length} products successfully!`);
+
+      // Refresh products list
       await get().fetchProducts();
     } catch (error) {
+      console.error('❌ Bulk update error:', error);
       toast.error(error.message || 'Failed to bulk update products');
+
+      set({
+        loading: false,
+        error: error.message || 'Failed to bulk update products',
+      });
+
       throw error;
-    } finally {
-      set({ loading: false });
     }
   },
 
+  // Update product stock
   updateStock: async (id, stock) => {
     try {
+      console.log(`📦 Updating stock for product ${id} to ${stock}`);
       const response = await productService.updateStock(id, stock);
-      toast.success(response.message || 'Stock updated');
-      await get().fetchProducts();
+      console.log('✅ Stock update response:', response);
+
+      // Update product in the list
+      set((state) => ({
+        products: state.products.map((p) =>
+          p._id === id || p.id === id ? { ...p, stock } : p
+        ),
+        selectedProduct:
+          state.selectedProduct?._id === id || state.selectedProduct?.id === id
+            ? { ...state.selectedProduct, stock }
+            : state.selectedProduct,
+      }));
+
+      toast.success(response?.message || 'Stock updated successfully! 📊');
     } catch (error) {
+      console.error('❌ Update stock error:', error);
       toast.error(error.message || 'Failed to update stock');
       throw error;
     }
   },
 
+  // Get low stock products
   getLowStock: async (threshold = 10) => {
     try {
+      console.log(`📦 Fetching low stock products (threshold: ${threshold})`);
       const response = await productService.getLowStock(threshold);
-      return response.data;
+      console.log('✅ Low stock response:', response);
+
+      const { data: lowStockProducts } = parseResponse(response, 'Low Stock');
+
+      return Array.isArray(lowStockProducts) ? lowStockProducts : [lowStockProducts];
     } catch (error) {
+      console.error('❌ Get low stock error:', error);
       toast.error(error.message || 'Failed to fetch low stock products');
-      throw error;
+      return [];
     }
   },
 
+  // ============ PAGINATION ============
   setPage: (page) => {
-    set({ pagination: { ...get().pagination, page } });
+    set((state) => ({
+      pagination: { ...state.pagination, page },
+    }));
     get().fetchProducts();
   },
 
+  setLimit: (limit) => {
+    set((state) => ({
+      pagination: { ...state.pagination, limit, page: 1 },
+    }));
+    get().fetchProducts();
+  },
+
+  // ============ UTILITY ACTIONS ============
   clearSelected: () => {
     set({ selectedProduct: null });
   },
+
+  clearError: () => {
+    set({ error: null });
+  },
+
+  // Reset entire store
+  resetStore: () => {
+    set({
+      products: [],
+      selectedProduct: null,
+      loading: false,
+      error: null,
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+      },
+      filters: {
+        search: '',
+        category: '',
+        status: '',
+        sort: '-createdAt',
+      },
+    });
+  },
+
+  // Debug: Get current token info
+  getTokenInfo: () => {
+    const token = getToken();
+    if (!token) {
+      console.log('❌ No token found');
+      return null;
+    }
+    console.log('✅ Token found:', token.substring(0, 30) + '...');
+    console.log('Token source:', {
+      localStorage: localStorage.getItem('accessToken') || localStorage.getItem('adminToken') || localStorage.getItem('token'),
+      sessionStorage: sessionStorage.getItem('accessToken') || sessionStorage.getItem('adminToken'),
+      cookies: Cookies.get('accessToken') || Cookies.get('adminToken') || Cookies.get('token'),
+    });
+    return token;
+  },
 }));
+
+export default useProductStore;
