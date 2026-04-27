@@ -1,105 +1,10 @@
-// src/store/productStore.js
 'use client';
 
 import { create } from 'zustand';
 import { productService } from '@/services/product.service';
 import toast from 'react-hot-toast';
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'; // ✅ Import Cookies
 
-// ============================================
-// TOKEN HELPER - Check multiple sources
-// ============================================
-const getToken = () => {
-  // Check localStorage first (most common)
-  let token = localStorage.getItem('accessToken');
-  
-  // Check alternative localStorage keys
-  if (!token) {
-    token = localStorage.getItem('adminToken');
-  }
-  
-  if (!token) {
-    token = localStorage.getItem('token');
-  }
-  
-  // Check sessionStorage
-  if (!token) {
-    token = sessionStorage.getItem('accessToken');
-  }
-  
-  if (!token) {
-    token = sessionStorage.getItem('adminToken');
-  }
-  
-  // Check cookies
-  if (!token) {
-    token = Cookies.get('accessToken');
-  }
-  
-  if (!token) {
-    token = Cookies.get('adminToken');
-  }
-  
-  if (!token) {
-    token = Cookies.get('token');
-  }
-  
-  return token;
-};
-
-// ============================================
-// RESPONSE PARSER - Handle different API responses
-// ============================================
-const parseResponse = (response, context = '') => {
-  console.log(`📦 ${context} response:`, response);
-
-  if (!response) {
-    console.warn(`⚠️ ${context}: Empty response`);
-    return { data: [], pagination: { total: 0, page: 1, pages: 1 } };
-  }
-
-  // Handle wrapped response: { success, data, pagination, message }
-  if (response.data !== undefined) {
-    return {
-      data: Array.isArray(response.data) ? response.data : response.data,
-      pagination: response.pagination || { total: 0, page: 1, pages: 1 },
-      message: response.message || '',
-    };
-  }
-
-  // Handle direct array
-  if (Array.isArray(response)) {
-    return {
-      data: response,
-      pagination: { total: response.length, page: 1, pages: 1 },
-      message: '',
-    };
-  }
-
-  // Handle { products, total, pages }
-  if (response.products) {
-    return {
-      data: Array.isArray(response.products) ? response.products : [response.products],
-      pagination: {
-        total: response.total || 0,
-        page: response.page || 1,
-        pages: response.pages || 1,
-      },
-      message: response.message || '',
-    };
-  }
-
-  // Return as-is
-  return {
-    data: response,
-    pagination: { total: 0, page: 1, pages: 1 },
-    message: '',
-  };
-};
-
-// ============================================
-// STORE
-// ============================================
 export const useProductStore = create((set, get) => ({
   // ============ STATE ============
   products: [],
@@ -143,12 +48,10 @@ export const useProductStore = create((set, get) => ({
     });
   },
 
-  // ============ PRODUCT ACTIONS ============
-
-  // Fetch all products
+  // ✅ SINGLE fetchProducts function with token check
   fetchProducts: async () => {
-    const token = getToken();
-
+    const token = Cookies.get('accessToken'); // ✅ Read from cookies
+    
     if (!token) {
       console.log('⏭️ No token found, skipping product fetch');
       set({ products: [], loading: false });
@@ -198,7 +101,7 @@ export const useProductStore = create((set, get) => ({
 
   // Fetch single product
   fetchProduct: async (id) => {
-    const token = getToken();
+    const token = Cookies.get('accessToken'); // ✅ Read from cookies
     if (!token) {
       toast.error('Please login first');
       return null;
@@ -359,51 +262,17 @@ export const useProductStore = create((set, get) => ({
     }
   },
 
-  // Delete product
   deleteProduct: async (id) => {
-    const token = getToken();
-
-    if (!token) {
-      toast.error('Please login first');
-      throw new Error('No authentication token');
-    }
-
-    set({ loading: true, error: null });
-
+    set({ loading: true });
     try {
-      console.log(`📦 Deleting product ${id}...`);
       const response = await productService.delete(id);
-      console.log('✅ Product deletion response:', response);
-
-      const { message } = parseResponse(response, 'Delete Product');
-
-      // Remove product from list
-      set((state) => ({
-        products: state.products.filter((p) => p._id !== id && p.id !== id),
-        selectedProduct:
-          state.selectedProduct?._id === id || state.selectedProduct?.id === id
-            ? null
-            : state.selectedProduct,
-        loading: false,
-        error: null,
-      }));
-
-      toast.success(message || 'Product deleted successfully! 🗑️');
+      toast.success(response.message || 'Product deleted successfully');
+      await get().fetchProducts();
     } catch (error) {
-      console.error('❌ Delete product error:', error);
-
-      if (error.status === 401) {
-        toast.error('Session expired. Please login again.');
-      } else {
-        toast.error(error.message || 'Failed to delete product');
-      }
-
-      set({
-        loading: false,
-        error: error.message || 'Failed to delete product',
-      });
-
+      toast.error(error.message || 'Failed to delete product');
       throw error;
+    } finally {
+      set({ loading: false });
     }
   },
 

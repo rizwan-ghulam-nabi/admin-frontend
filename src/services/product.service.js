@@ -1,10 +1,11 @@
-// // src/services/product.service.js
+// src/services/product.service.js
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
-// // API request helper for JSON
+// // API request helper
 // const apiRequest = async (endpoint, options = {}) => {
 //   const url = `${API_BASE_URL}${endpoint}`;
+  
 //   const token = localStorage.getItem('accessToken');
   
 //   const headers = {
@@ -27,88 +28,51 @@
 //     const data = await response.json();
     
 //     if (!response.ok) {
-//       // ✅ Create error with full details
-//       const error = new Error(data.message || 'Something went wrong');
-//       error.status = response.status;
-//       error.data = data;
-//       error.errors = data.errors;
-//       throw error;
+//       throw new Error(data.message || 'Something went wrong');
 //     }
     
-//     // ✅ Return full response structure
-//     return {
-//       success: data.success,
-//       data: data.data,
-//       message: data.message,
-//       pagination: data.pagination
-//     };
+//     return data;
 //   } catch (error) {
-//     console.error('API Error:', error.message || error);
+//     console.error('API Error:', error);
 //     throw error;
 //   }
 // };
 
-// // API methods for JSON
-// const get = (endpoint, options = {}) => 
-//   apiRequest(endpoint, { ...options, method: 'GET' });
-  
-// const post = (endpoint, body, options = {}) => 
-//   apiRequest(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) });
-  
-// const put = (endpoint, body, options = {}) => 
-//   apiRequest(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) });
-  
-// const patch = (endpoint, body, options = {}) => 
-//   apiRequest(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) });
-  
-// const del = (endpoint, options = {}) => 
-//   apiRequest(endpoint, { ...options, method: 'DELETE' });
+// // API methods
+// const get = (endpoint, options = {}) => {
+//   return apiRequest(endpoint, { ...options, method: 'GET' });
+// };
 
-// // FormData request helper for file uploads
-// const formDataRequest = async (endpoint, method, formData) => {
-//   const url = `${API_BASE_URL}${endpoint}`;
-//   const token = localStorage.getItem('accessToken');
-  
-//   const headers = {};
-//   if (token) {
-//     headers['Authorization'] = `Bearer ${token}`;
-//   }
-  
-//   try {
-//     const response = await fetch(url, {
-//       method,
-//       headers,
-//       credentials: 'include',
-//       body: formData,
-//     });
-    
-//     const data = await response.json();
-    
-//     if (!response.ok) {
-//       // ✅ Proper error with full details
-//       const error = new Error(data.message || 'Something went wrong');
-//       error.status = response.status;
-//       error.data = data;
-//       error.errors = data.errors;
-//       throw error;
-//     }
-    
-//     // ✅ Return full response
-//     return {
-//       success: data.success,
-//       data: data.data,
-//       message: data.message,
-//       pagination: data.pagination
-//     };
-//   } catch (error) {
-//     console.error('API Error:', error.message || error);
-//     throw error;
-//   }
+// const post = (endpoint, body, options = {}) => {
+//   return apiRequest(endpoint, { 
+//     ...options, 
+//     method: 'POST', 
+//     body: JSON.stringify(body) 
+//   });
+// };
+
+// const put = (endpoint, body, options = {}) => {
+//   return apiRequest(endpoint, { 
+//     ...options, 
+//     method: 'PUT', 
+//     body: JSON.stringify(body) 
+//   });
+// };
+
+// const patch = (endpoint, body, options = {}) => {
+//   return apiRequest(endpoint, { 
+//     ...options, 
+//     method: 'PATCH', 
+//     body: JSON.stringify(body) 
+//   });
+// };
+
+// const del = (endpoint, options = {}) => {
+//   return apiRequest(endpoint, { ...options, method: 'DELETE' });
 // };
 
 // // Product Service
 // export const productService = {
-//   // Get all products with filters
 //   async getAll(params = {}) {
 //     const queryParams = new URLSearchParams();
 //     if (params.page) queryParams.append('page', params.page);
@@ -119,53 +83,35 @@
 //     if (params.sort) queryParams.append('sort', params.sort);
     
 //     const query = queryParams.toString();
-//     // ✅ FIX: Remove /admin prefix - your routes are at /products
-//     return get(`/products${query ? `?${query}` : ''}`);
+//     return get(`/admin/products${query ? `?${query}` : ''}`);
 //   },
 
-//   // Get single product by ID
 //   async getById(id) {
-//     // ✅ FIX: Remove /admin prefix
-//     return get(`/products/${id}`);
+//     return get(`/admin/products/${id}`);
 //   },
 
-//   // Create product - supports both JSON and FormData
 //   async create(data) {
-//     // ✅ FIX: Remove /admin prefix
-//     if (data instanceof FormData) {
-//       return formDataRequest('/products', 'POST', data);
-//     }
-//     return post('/products', data);
+//     return post('/admin/products', data);
 //   },
 
-//   // Update product - supports both JSON and FormData
 //   async update(id, data) {
-//     // ✅ FIX: Remove /admin prefix
-//     if (data instanceof FormData) {
-//       return formDataRequest(`/products/${id}`, 'PUT', data);
-//     }
-//     return put(`/products/${id}`, data);
+//     return put(`/admin/products/${id}`, data);
 //   },
 
-//   // Delete product
 //   async delete(id) {
-//     // ✅ FIX: Remove /admin prefix
-//     return del(`/products/${id}`);
+//     return del(`/admin/products/${id}`);
 //   },
 
-//   // Bulk update products
 //   async bulkUpdate(productIds, updateData) {
-//     return post('/products/bulk-update', { productIds, updateData });
+//     return post('/admin/products/bulk-update', { productIds, updateData });
 //   },
 
-//   // Update product stock
 //   async updateStock(id, stock) {
-//     return patch(`/products/${id}/stock`, { stock });
+//     return patch(`/admin/products/${id}/stock`, { stock });
 //   },
 
-//   // Get low stock products
 //   async getLowStock(threshold = 10) {
-//     return get(`/products/low-stock?threshold=${threshold}`);
+//     return get(`/admin/products/low-stock?threshold=${threshold}`);
 //   },
 // };
 
@@ -179,32 +125,18 @@
 
 
 
-// src/services/product.service.js
+
+
+
+
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
-
-// ✅ Helper to get token from multiple sources
-const getToken = () => {
-  // Try localStorage first
-  let token = localStorage.getItem('accessToken');
-  
-  // If not in localStorage, try cookies
-  if (!token) {
-    token = localStorage.getItem('adminToken'); // Alternative name
-  }
-  
-  // If not in localStorage, try sessionStorage
-  if (!token) {
-    token = sessionStorage.getItem('accessToken');
-  }
-  
-  return token;
-};
 
 // API request helper for JSON
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = getToken(); // ✅ Use helper function
+  const token = localStorage.getItem('accessToken');
   
   const headers = {
     'Content-Type': 'application/json',
@@ -223,31 +155,38 @@ const apiRequest = async (endpoint, options = {}) => {
   
   try {
     const response = await fetch(url, config);
-    const data = await response.json();
     
-    if (!response.ok) {
-      const error = new Error(data.message || 'Something went wrong');
-      error.status = response.status;
-      error.data = data;
-      throw error;
+    // Handle empty responses
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      data = { message: text || 'Unknown error' };
     }
     
-    return {
-      success: data.success,
-      data: data.data,
-      message: data.message,
-      pagination: data.pagination
-    };
+    if (!response.ok) {
+      throw new Error(data.message || 'Something went wrong');
+    }
+    
+    return data;
   } catch (error) {
-    console.error('API Error:', error.message || error);
+    console.error('API Error:', error);
     throw error;
   }
 };
 
-// FormData request helper
+// API methods for JSON
+const get = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' });
+const post = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) });
+const put = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) });
+const patch = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) });
+const del = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' });
+
+// FormData request helper for file uploads
 const formDataRequest = async (endpoint, method, formData) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = getToken(); // ✅ Use helper function
+  const token = localStorage.getItem('accessToken');
   
   const headers = {};
   if (token) {
@@ -262,47 +201,32 @@ const formDataRequest = async (endpoint, method, formData) => {
       body: formData,
     });
     
-    const data = await response.json();
-    
-    if (!response.ok) {
-      const error = new Error(data.message || 'Something went wrong');
-      error.status = response.status;
-      error.data = data;
-      throw error;
+    // Handle empty responses
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      data = { message: text || 'Unknown error' };
     }
     
-    return {
-      success: data.success,
-      data: data.data,
-      message: data.message,
-      pagination: data.pagination
-    };
+    if (!response.ok) {
+      throw new Error(data.message || 'Something went wrong');
+    }
+    
+    return data;
   } catch (error) {
-    console.error('API Error:', error.message || error);
+    console.error('API Error:', error);
     throw error;
   }
 };
 
-// Rest of your code remains the same...
-const get = (endpoint, options = {}) => 
-  apiRequest(endpoint, { ...options, method: 'GET' });
-  
-const post = (endpoint, body, options = {}) => 
-  apiRequest(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) });
-  
-const put = (endpoint, body, options = {}) => 
-  apiRequest(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) });
-  
-const patch = (endpoint, body, options = {}) => 
-  apiRequest(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) });
-  
-const del = (endpoint, options = {}) => 
-  apiRequest(endpoint, { ...options, method: 'DELETE' });
-
 // Product Service
 export const productService = {
+  // Get all products with filters
   async getAll(params = {}) {
     const queryParams = new URLSearchParams();
+    
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
     if (params.search) queryParams.append('search', params.search);
@@ -315,17 +239,24 @@ export const productService = {
   },
 
   async getById(id) {
-    return get(`/products/${id}`);
+    return get(`/admin/products/${id}`);
   },
 
+  // Create product - supports both JSON and FormData
   async create(data) {
+    if (!data) throw new Error('Product data is required');
+    
     if (data instanceof FormData) {
       return formDataRequest('/products', 'POST', data);
     }
     return post('/products', data);
   },
 
+  // Update product - supports both JSON and FormData
   async update(id, data) {
+    if (!id) throw new Error('Product ID is required');
+    if (!data) throw new Error('Product data is required');
+    
     if (data instanceof FormData) {
       return formDataRequest(`/products/${id}`, 'PUT', data);
     }
@@ -333,15 +264,15 @@ export const productService = {
   },
 
   async delete(id) {
-    return del(`/products/${id}`);
+    return del(`/admin/products/${id}`);
   },
 
   async bulkUpdate(productIds, updateData) {
-    return post('/products/bulk-update', { productIds, updateData });
+    return post('/admin/products/bulk-update', { productIds, updateData });
   },
 
   async updateStock(id, stock) {
-    return patch(`/products/${id}/stock`, { stock });
+    return patch(`/admin/products/${id}/stock`, { stock });
   },
 
   async getLowStock(threshold = 10) {

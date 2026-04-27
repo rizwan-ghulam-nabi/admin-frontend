@@ -348,6 +348,36 @@ const ImageUploader = ({ images, setImages, maxImages = 5 }) => {
 };
 
 // ============================================
+// TOGGLE SWITCH COMPONENT
+// ============================================
+const ToggleSwitch = ({ label, name, checked, onChange, activeColor = 'bg-green-500', icon: Icon }) => {
+  return (
+    <label className="flex items-center cursor-pointer group">
+      <div className="relative inline-flex items-center">
+        <input
+          type="checkbox"
+          name={name}
+          checked={checked}
+          onChange={onChange}
+          className="sr-only"
+        />
+        <div className={`w-12 h-7 rounded-full transition-colors duration-200 ease-in-out ${checked ? activeColor : 'bg-gray-300'}`}>
+          <div
+            className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+              checked ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </div>
+      </div>
+      {Icon && <Icon className={`h-4 w-4 ml-3 transition-colors duration-200 ${checked ? 'text-green-600' : 'text-gray-400'}`} />}
+      <span className={`ml-2 text-sm font-medium transition-colors duration-200 ${checked ? 'text-gray-900' : 'text-gray-500'}`}>
+        {label}
+      </span>
+    </label>
+  );
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 export default function CreateProductPage() {
@@ -386,7 +416,6 @@ export default function CreateProductPage() {
     loadCategories();
   }, []);
 
-  // Debug: Log categories when they change
   useEffect(() => {
     console.log('📋 Categories loaded:', categories.length, categories);
     if (categories.length > 0) {
@@ -623,25 +652,28 @@ export default function CreateProductPage() {
                 placeholder="electronics, wireless, premium (comma separated)"
               />
 
-              <div className="flex gap-6 p-4 bg-gray-50 rounded-xl">
-                <label className="flex items-center cursor-pointer">
-                  <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="sr-only" />
-                  <div className={`w-11 h-6 rounded-full transition-all ${formData.isActive ? 'bg-green-500' : 'bg-gray-300'}`}>
-                    <motion.div animate={{ x: formData.isActive ? 22 : 2 }} className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow" />
-                  </div>
-                  <span className="ml-3 text-sm font-medium text-gray-700">Active</span>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="sr-only" />
-                  <div className={`w-11 h-6 rounded-full transition-all ${formData.isFeatured ? 'bg-amber-500' : 'bg-gray-300'}`}>
-                    <motion.div animate={{ x: formData.isFeatured ? 22 : 2 }} className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow" />
-                  </div>
-                  <span className="ml-3 text-sm font-medium text-gray-700">Featured</span>
-                </label>
+              {/* FIXED TOGGLE SECTION - No more jumping */}
+              <div className="flex gap-8 p-5 bg-gray-50 rounded-xl border border-gray-100">
+                <ToggleSwitch
+                  label="Active"
+                  name="isActive"
+                  checked={formData.isActive}
+                  onChange={handleChange}
+                  activeColor="bg-green-500"
+                  icon={CheckCircleIcon}
+                />
+                <ToggleSwitch
+                  label="Featured"
+                  name="isFeatured"
+                  checked={formData.isFeatured}
+                  onChange={handleChange}
+                  activeColor="bg-amber-500"
+                  icon={StarIcon}
+                />
               </div>
 
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100">
-                <Link href="/products" className="px-6 py-3 border border-gray-200 rounded-xl text-gray-600 bg-white hover:bg-gray-50 font-medium">
+                <Link href="/products" className="px-6 py-3 border border-gray-200 rounded-xl text-gray-600 bg-white hover:bg-gray-50 font-medium transition-colors duration-200">
                   Cancel
                 </Link>
                 <motion.button
@@ -649,7 +681,7 @@ export default function CreateProductPage() {
                   disabled={submitting || loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl font-medium disabled:opacity-50 flex items-center space-x-2"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl font-medium disabled:opacity-50 flex items-center space-x-2 transition-all duration-200"
                 >
                   {submitting || loading ? (
                     <>
