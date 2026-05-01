@@ -93,20 +93,79 @@ export default function ProductsPage() {
 
   // Table columns
   const columns = [
-    {
-      key: 'image',
-      header: 'Image',
-      render: (_, row) => {
-        const img = row.images?.find((i) => i.isMain)?.url || row.images?.[0]?.url || row.image;
-        return img ? (
-          <img src={img} alt={row.name} className="h-12 w-12 rounded object-cover" />
-        ) : (
-          <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-400">
-            No img
-          </div>
-        );
-      },
-    },
+    // {
+    //   key: 'image',
+    //   header: 'Image',
+    //   render: (_, row) => {
+    //     const img = row.images?.find((i) => i.isMain)?.url || row.images?.[0]?.url || row.image;
+    //     return img ? (
+    //       <img src={img} alt={row.name} className="h-12 w-12 rounded object-cover" />
+    //     ) : (
+    //       <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-400">
+    //         No img
+    //       </div>
+    //     );
+    //   },
+    // },
+
+
+
+
+
+  
+   // In app/products/page.js - Image column
+{
+  key: 'image',
+  header: 'Image',
+  render: (_, row) => {
+    // Get image from Cloudinary URL
+    let imageUrl = null;
+    
+    // Check images array (Cloudinary format)
+    if (row.images && Array.isArray(row.images) && row.images.length > 0) {
+      imageUrl = row.images[0]?.url;
+    }
+    
+    // Check single image field
+    if (!imageUrl) {
+      imageUrl = row.image || row.imageUrl;
+    }
+    
+    // Skip if undefined or null
+    if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null' || imageUrl.includes('undefined')) {
+      const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-yellow-400 to-yellow-600', 'from-red-400 to-red-600'];
+      const colorIndex = (row.name || 'P').charCodeAt(0) % colors.length;
+      
+      return (
+        <div className={`h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm`}>
+          <span className="text-white font-bold text-lg">
+            {(row.name || 'P').charAt(0).toUpperCase()}
+          </span>
+        </div>
+      );
+    }
+    
+    console.log('🖼️ Image URL:', imageUrl);
+    
+    return (
+      <img 
+        src={imageUrl} 
+        alt={row.name || 'Product'} 
+        className="h-12 w-12 rounded object-cover border border-gray-200 shadow-sm"
+        onError={(e) => {
+          e.target.style.display = 'none';
+          const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600'];
+          const colorIndex = (row.name || 'P').charCodeAt(0) % colors.length;
+          e.target.parentElement.innerHTML = `<div class="h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm"><span class="text-white font-bold text-lg">${(row.name || 'P').charAt(0).toUpperCase()}</span></div>`;
+        }}
+      />
+    );
+  },
+},
+
+
+
+
     {
       key: 'name',
       header: 'Name',
@@ -181,7 +240,7 @@ export default function ProductsPage() {
       <Layout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-semibold">Access Denied</h2>
-          <p className="text-gray-500 mt-2">You don't have permission to view products.</p>
+          <p className="text-gray-500 mt-2">You don&apos;t have permission to view products.</p>
         </div>
       </Layout>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { orderService } from '@/services/order.service';
+import { orderService } from '../services/orderservice';
 import toast from 'react-hot-toast';
 
 export const useOrderStore = create((set, get) => ({

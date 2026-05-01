@@ -52,7 +52,7 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
           <div className={`p-3 rounded-xl bg-gradient-to-br ${gradients[color]} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
-          {trend && (
+          {trend !== undefined && trend !== 0 && (
             <span className={`text-sm font-medium ${trend > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {trend > 0 ? '+' : ''}{trend}%
             </span>
@@ -116,25 +116,25 @@ const OrderRow = ({ order, index }) => {
         <div className="flex items-center">
           <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mr-3">
             <span className="text-sm font-medium text-gray-600">
-              {order.customer?.name?.charAt(0) || 'G'}
+              {order.customer?.name?.charAt(0) || order.user?.email?.charAt(0) || 'G'}
             </span>
           </div>
           <div>
-            <p className="font-medium text-gray-900">{order.customer?.name || 'Guest'}</p>
-            <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
+            <p className="font-medium text-gray-900">{order.customer?.name || order.user?.name || order.shippingAddress?.fullName || 'Guest'}</p>
+            <p className="text-xs text-gray-500">{order.customer?.email || order.user?.email || 'No email'}</p>
           </div>
         </div>
       </td>
       <td className="px-6 py-5 whitespace-nowrap">
         <span className="font-semibold text-gray-900">${Number(order.total || 0).toFixed(2)}</span>
         <p className="text-xs text-gray-500">{order.items?.length || 0} items</p>
-      </td>
+       </td>
       <td className="px-6 py-5 whitespace-nowrap">
-        {getPaymentBadge(order.paymentStatus)}
-      </td>
+        {getPaymentBadge(order.paymentStatus || order.paymentMethod === 'card' ? 'paid' : 'pending')}
+       </td>
       <td className="px-6 py-5 whitespace-nowrap">
         {getStatusBadge(order.status)}
-      </td>
+       </td>
       <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-500">
         <div className="flex items-center">
           <CalendarIcon className="h-4 w-4 mr-1.5 text-gray-400" />
@@ -144,7 +144,7 @@ const OrderRow = ({ order, index }) => {
             year: 'numeric',
           })}
         </div>
-      </td>
+       </td>
       <td className="px-6 py-5 whitespace-nowrap text-right">
         <Menu as="div" className="relative inline-block text-left">
           <Menu.Button className="p-2 rounded-lg hover:bg-gray-100 transition-colors group-hover:opacity-100">
@@ -180,7 +180,7 @@ const OrderRow = ({ order, index }) => {
             </Menu.Items>
           </Transition>
         </Menu>
-      </td>
+       </td>
     </motion.tr>
   );
 };
@@ -236,6 +236,62 @@ export default function OrdersPage() {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // ============ REAL STATS STATE ============
+  const [realStats, setRealStats] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    avgOrderValue: 0,
+    trends: { orders: 0, revenue: 0, pending: 0, avg: 0 }
+  });
+
+  // ============ CALCULATE REAL STATS FROM ORDERS ============
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      // Calculate real stats from actual order data
+      const totalOrders = pagination?.total || orders.length;
+      const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+      const pendingOrders = orders.filter(order => order.status === 'pending').length;
+      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+      
+      // Calculate trends (compare with previous period if available)
+      const currentMonthOrders = orders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        const now = new Date();
+        return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+      });
+      
+      const lastMonthOrders = orders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        const now = new Date();
+        const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+        const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+        return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+      });
+      
+      const ordersTrend = lastMonthOrders.length > 0
+        ? ((currentMonthOrders.length - lastMonthOrders.length) / lastMonthOrders.length) * 100
+        : 0;
+      
+      const currentRevenue = currentMonthOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const lastRevenue = lastMonthOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const revenueTrend = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 : 0;
+      
+      setRealStats({
+        totalOrders: totalOrders,
+        totalRevenue: totalRevenue,
+        pendingOrders: pendingOrders,
+        avgOrderValue: avgOrderValue,
+        trends: {
+          orders: Number(ordersTrend.toFixed(1)),
+          revenue: Number(revenueTrend.toFixed(1)),
+          pending: 0,
+          avg: 0
+        }
+      });
+    }
+  }, [orders, pagination]);
 
   useEffect(() => {
     fetchOrders();
@@ -252,13 +308,7 @@ export default function OrdersPage() {
     setFilters({ search: searchTerm });
   };
 
-  const mockStats = {
-    totalOrders: pagination.total || 2847,
-    totalRevenue: 384590.50,
-    pendingOrders: 34,
-    avgOrderValue: 135.23,
-    trends: { orders: 12.5, revenue: 18.3, pending: -5.2, avg: 3.8 },
-  };
+  // ============ REMOVED MOCK STATS - NOW USING REAL DATA ============
 
   if (!canManageOrders) {
     return (
@@ -306,12 +356,36 @@ export default function OrdersPage() {
           </div>
         </motion.div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - NOW USING REAL DATA */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total Orders" value={mockStats.totalOrders.toLocaleString()} icon={ShoppingBagIcon} trend={mockStats.trends.orders} color="blue" />
-          <StatCard title="Total Revenue" value={`$${mockStats.totalRevenue.toLocaleString()}`} icon={CurrencyDollarIcon} trend={mockStats.trends.revenue} color="green" />
-          <StatCard title="Pending Orders" value={mockStats.pendingOrders} icon={ClockIcon} trend={mockStats.trends.pending} color="orange" />
-          <StatCard title="Avg Order Value" value={`$${mockStats.avgOrderValue.toFixed(2)}`} icon={ChartBarIcon} trend={mockStats.trends.avg} color="purple" />
+          <StatCard 
+            title="Total Orders" 
+            value={realStats.totalOrders.toLocaleString()} 
+            icon={ShoppingBagIcon} 
+            trend={realStats.trends.orders} 
+            color="blue" 
+          />
+          <StatCard 
+            title="Total Revenue" 
+            value={`$${realStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
+            icon={CurrencyDollarIcon} 
+            trend={realStats.trends.revenue} 
+            color="green" 
+          />
+          <StatCard 
+            title="Pending Orders" 
+            value={realStats.pendingOrders} 
+            icon={ClockIcon} 
+            trend={undefined} 
+            color="orange" 
+          />
+          <StatCard 
+            title="Avg Order Value" 
+            value={`$${realStats.avgOrderValue.toFixed(2)}`} 
+            icon={ChartBarIcon} 
+            trend={undefined} 
+            color="purple" 
+          />
         </div>
 
         {/* Filters Bar */}
