@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Layout from '@/components/Layout';               // adjust path if needed
+import Layout from '@/components/Layout';
 import DataTable from '@/components/tables/DataTable';
 import Pagination from '@/components/tables/Pagination';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
@@ -17,6 +17,18 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+
+// Helper function to get token from cookies
+const getTokenFromCookies = () => {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'accessToken' || name === 'adminToken' || name === 'token') {
+      return value;
+    }
+  }
+  return null;
+};
 
 export default function ProductsPage() {
   const {
@@ -39,9 +51,75 @@ export default function ProductsPage() {
   const [deleteId, setDeleteId] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [categoryMap, setCategoryMap] = useState({});
+  const [categoriesList, setCategoriesList] = useState([]);
 
+  // Fetch products
   useEffect(() => {
     fetchProducts();
+  }, []);
+
+  // Fetch categories - READ TOKEN FROM COOKIES
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        // Get token from cookies (where your login saves it)
+        const token = getTokenFromCookies();
+        
+        console.log('🔑 Token from cookies:', token ? 'Found' : 'Missing');
+        
+        if (!token) {
+          console.log('No token found, skipping category fetch');
+          return;
+        }
+        
+        const response = await fetch('http://localhost:5001/api/v1/admin/categories', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Important for cookie handling
+        });
+        
+        console.log('📡 Categories API status:', response.status);
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('📦 Categories response:', result);
+          
+          // Extract categories array from response
+          let cats = [];
+          if (result.data && Array.isArray(result.data)) {
+            cats = result.data;
+          } else if (result.categories && Array.isArray(result.categories)) {
+            cats = result.categories;
+          } else if (Array.isArray(result)) {
+            cats = result;
+          }
+          
+          console.log('✅ Categories extracted:', cats.length);
+          
+          // Create mapping of ID to name
+          const map = {};
+          cats.forEach(cat => {
+            if (cat._id && cat.name) {
+              map[cat._id] = cat.name;
+            }
+          });
+          
+          setCategoryMap(map);
+          setCategoriesList(cats);
+          console.log('📁 Category map created with', Object.keys(map).length, 'categories');
+        } else {
+          console.error('Failed to load categories, status:', response.status);
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+      }
+    };
+    
+    loadCategories();
   }, []);
 
   // Search / Filters
@@ -64,19 +142,16 @@ export default function ProductsPage() {
 
   // Delete handlers
   const handleDeleteClick = (product) => {
-    console.log('🗑️ Delete clicked:', product._id, product.name);
     setDeletingProduct(product);
     setDeleteId(product._id);
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
-    console.log('🗑️ Confirming delete for:', deleteId);
     setIsDeleting(true);
     try {
       await deleteProduct(deleteId);
       toast.success('Product deleted successfully');
-      // Reset
       setDeleteId(null);
       setDeletingProduct(null);
     } catch (err) {
@@ -91,81 +166,67 @@ export default function ProductsPage() {
     setDeletingProduct(null);
   };
 
+  // Function to get category name from ID
+  const getCategoryName = (categoryValue) => {
+    if (!categoryValue) return 'No category';
+    
+    // If it's already an object with name (populated)
+    if (typeof categoryValue === 'object' && categoryValue.name) {
+      return categoryValue.name;
+    }
+    
+    // If it's a string ID, look up in map
+    if (typeof categoryValue === 'string') {
+      return categoryMap[categoryValue] || `ID: ${categoryValue.substring(0, 8)}...`;
+    }
+    
+    return 'No category';
+  };
+
   // Table columns
   const columns = [
-    // {
-    //   key: 'image',
-    //   header: 'Image',
-    //   render: (_, row) => {
-    //     const img = row.images?.find((i) => i.isMain)?.url || row.images?.[0]?.url || row.image;
-    //     return img ? (
-    //       <img src={img} alt={row.name} className="h-12 w-12 rounded object-cover" />
-    //     ) : (
-    //       <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-400">
-    //         No img
-    //       </div>
-    //     );
-    //   },
-    // },
-
-
-
-
-
-  
-   // In app/products/page.js - Image column
-{
-  key: 'image',
-  header: 'Image',
-  render: (_, row) => {
-    // Get image from Cloudinary URL
-    let imageUrl = null;
-    
-    // Check images array (Cloudinary format)
-    if (row.images && Array.isArray(row.images) && row.images.length > 0) {
-      imageUrl = row.images[0]?.url;
-    }
-    
-    // Check single image field
-    if (!imageUrl) {
-      imageUrl = row.image || row.imageUrl;
-    }
-    
-    // Skip if undefined or null
-    if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null' || imageUrl.includes('undefined')) {
-      const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-yellow-400 to-yellow-600', 'from-red-400 to-red-600'];
-      const colorIndex = (row.name || 'P').charCodeAt(0) % colors.length;
-      
-      return (
-        <div className={`h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm`}>
-          <span className="text-white font-bold text-lg">
-            {(row.name || 'P').charAt(0).toUpperCase()}
-          </span>
-        </div>
-      );
-    }
-    
-    console.log('🖼️ Image URL:', imageUrl);
-    
-    return (
-      <img 
-        src={imageUrl} 
-        alt={row.name || 'Product'} 
-        className="h-12 w-12 rounded object-cover border border-gray-200 shadow-sm"
-        onError={(e) => {
-          e.target.style.display = 'none';
-          const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600'];
+    {
+      key: 'image',
+      header: 'Image',
+      render: (_, row) => {
+        let imageUrl = null;
+        
+        if (row.images && Array.isArray(row.images) && row.images.length > 0) {
+          imageUrl = row.images[0]?.url;
+        }
+        
+        if (!imageUrl) {
+          imageUrl = row.image || row.imageUrl;
+        }
+        
+        if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null' || imageUrl.includes('undefined')) {
+          const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600', 'from-yellow-400 to-yellow-600', 'from-red-400 to-red-600'];
           const colorIndex = (row.name || 'P').charCodeAt(0) % colors.length;
-          e.target.parentElement.innerHTML = `<div class="h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm"><span class="text-white font-bold text-lg">${(row.name || 'P').charAt(0).toUpperCase()}</span></div>`;
-        }}
-      />
-    );
-  },
-},
-
-
-
-
+          
+          return (
+            <div className={`h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm`}>
+              <span className="text-white font-bold text-lg">
+                {(row.name || 'P').charAt(0).toUpperCase()}
+              </span>
+            </div>
+          );
+        }
+        
+        return (
+          <img 
+            src={imageUrl} 
+            alt={row.name || 'Product'} 
+            className="h-12 w-12 rounded object-cover border border-gray-200 shadow-sm"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              const colors = ['from-blue-400 to-blue-600', 'from-green-400 to-green-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600'];
+              const colorIndex = (row.name || 'P').charCodeAt(0) % colors.length;
+              e.target.parentElement.innerHTML = `<div class="h-12 w-12 rounded bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-sm"><span class="text-white font-bold text-lg">${(row.name || 'P').charAt(0).toUpperCase()}</span></div>`;
+            }}
+          />
+        );
+      },
+    },
     {
       key: 'name',
       header: 'Name',
@@ -191,7 +252,14 @@ export default function ProductsPage() {
         </span>
       ),
     },
-    { key: 'category', header: 'Category', render: (v) => v?.name || v || '-' },
+    {
+      key: 'category',
+      header: 'Category',
+      render: (v, row) => {
+        const categoryName = getCategoryName(v);
+        return categoryName;
+      }
+    },
     {
       key: 'isActive',
       header: 'Status',
@@ -302,18 +370,21 @@ export default function ProductsPage() {
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
               </button>
             </form>
+            
+            {/* Category Filter - Now populated from cookies */}
             <select
               value={selectedCategory}
               onChange={handleCategoryFilter}
               className="rounded-md border-gray-300 px-3 py-2"
             >
               <option value="">All Categories</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Books">Books</option>
-              <option value="Home">Home</option>
-              {/* Add more as needed */}
+              {categoriesList.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
+            
             <select
               value={selectedStatus}
               onChange={handleStatusFilter}
